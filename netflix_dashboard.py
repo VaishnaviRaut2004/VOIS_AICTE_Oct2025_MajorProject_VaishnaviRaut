@@ -9,7 +9,8 @@ st.set_page_config(page_title="Netflix Dashboard", layout="wide")
 # -------------------------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Netflix Dataset.csv")     # <--- USE CSV
+    df = pd.read_csv("Netflix Dataset.csv", encoding="latin1", on_bad_lines="skip")
+# <--- USE CSV
     return df
 
 df = load_data()
