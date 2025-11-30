@@ -4,33 +4,38 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Netflix Dashboard", layout="wide")
 
-# -------------------------------------------
-# Load Netflix CSV (works on Streamlit Cloud)
-# -------------------------------------------
+# ---------------------------------------------------
+# Load CSV Data (Fix for UnicodeDecodeError)
+# ---------------------------------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Netflix Dataset.csv", encoding="latin1", on_bad_lines="skip")
-# <--- USE CSV
-    return df
+    return pd.read_csv(
+        "Netflix Dataset.csv",
+        encoding="latin1",        # fix encoding issue
+        on_bad_lines="skip"       # skip problematic rows
+    )
 
 df = load_data()
 
-# -------------------------------------------
+# ---------------------------------------------------
 # Title
-# -------------------------------------------
+# ---------------------------------------------------
 st.title("🎬 Netflix Data Dashboard")
 
-# -------------------------------------------
+# ---------------------------------------------------
 # Sidebar Filters
-# -------------------------------------------
+# ---------------------------------------------------
 st.sidebar.header("Filters")
 
+# Filter: Type
 type_options = ["All"] + sorted(df["type"].dropna().unique().tolist())
 selected_type = st.sidebar.selectbox("Select Type", type_options)
 
+# Filter: Country
 country_options = ["All"] + sorted(df["country"].dropna().unique().tolist())
 selected_country = st.sidebar.selectbox("Select Country", country_options)
 
+# Apply filters
 filtered_df = df.copy()
 
 if selected_type != "All":
@@ -39,15 +44,15 @@ if selected_type != "All":
 if selected_country != "All":
     filtered_df = filtered_df[filtered_df["country"] == selected_country]
 
-# -------------------------------------------
+# ---------------------------------------------------
 # Display Filtered Data
-# -------------------------------------------
+# ---------------------------------------------------
 st.subheader("📊 Filtered Data")
 st.dataframe(filtered_df)
 
-# -------------------------------------------
+# ---------------------------------------------------
 # Chart 1: Movies vs TV Shows
-# -------------------------------------------
+# ---------------------------------------------------
 st.subheader("🎥 Count of Movies vs TV Shows")
 
 type_counts = df["type"].value_counts()
@@ -60,30 +65,31 @@ ax1.set_ylabel("Count")
 
 st.pyplot(fig1)
 
-# -------------------------------------------
-# Content Added Over Years
-# -------------------------------------------
+# ---------------------------------------------------
+# Chart 2: Content Over Years
+# ---------------------------------------------------
 st.subheader("⏳ Content Added Over the Years")
 
 df["year_added"] = pd.to_datetime(df["date_added"], errors="coerce").dt.year
 year_counts = df["year_added"].value_counts().sort_index()
 
 fig2, ax2 = plt.subplots()
-ax2.plot(year_counts.index, year_counts.values, marker='o')
+ax2.plot(year_counts.index, year_counts.values, marker="o")
 ax2.set_title("Content Added Over Time")
 ax2.set_xlabel("Year")
 ax2.set_ylabel("Count")
 
 st.pyplot(fig2)
 
-# -------------------------------------------
-# Top 10 Genres
-# -------------------------------------------
+# ---------------------------------------------------
+# Chart 3: Top 10 Genres
+# ---------------------------------------------------
 st.subheader("🎭 Top 10 Genres")
 
 df["genres"] = df["listed_in"].apply(
     lambda x: x.split(",")[0] if pd.notnull(x) else "Unknown"
 )
+
 genre_counts = df["genres"].value_counts().head(10)
 
 fig3, ax3 = plt.subplots()
@@ -93,8 +99,8 @@ ax3.set_xlabel("Count")
 
 st.pyplot(fig3)
 
-# -------------------------------------------
+# ---------------------------------------------------
 # Footer
-# -------------------------------------------
+# ---------------------------------------------------
 st.markdown("---")
 st.caption("Made by Vaishnavi — Netflix Dashboard using Streamlit")
